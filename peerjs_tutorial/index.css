@@ -1,0 +1,12 @@
+*, *:before, *:after {
+    box-sizing: border-box;
+}
+.alignLeft{
+    text-align: left;
+}
+.alignRight{
+    text-align: right;
+}
+#chatArea{
+    width:35rem;
+}
