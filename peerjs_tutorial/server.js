@@ -1,3 +1,4 @@
+//Derived from: https://medium.com/samsung-internet-dev/building-an-internet-connected-phone-with-peerjs-775bd6ffebec
 const express = require("express");
 const http = require('http');
 const path = require('path');
@@ -8,7 +9,6 @@ const { ExpressPeerServer } = require('peer');
 const port = process.env.PORT || "8000";
 
 const peerServer = ExpressPeerServer(server, {
-    proxied: false,
     debug: true,
     path: '/myapp',
     ssl: {}

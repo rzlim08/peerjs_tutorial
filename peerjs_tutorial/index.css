@@ -1,11 +1,26 @@
 *, *:before, *:after {
     box-sizing: border-box;
 }
+#caststatus, #connectedStatus {
+    padding:5px;
+}
+
+#connectedStatus {
+    background-color: #4CBB17;
+    visibility: hidden;
+    margin-left: auto;
+}
 .alignLeft{
     text-align: left;
 }
 .alignRight{
     text-align: right;
+}
+.chatPage{
+    width:50rem;
+}
+.statuses{
+    display: flex;
 }
 #chatArea{
     width:35rem;
