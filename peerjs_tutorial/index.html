@@ -11,7 +11,7 @@
         // Derived from: https://medium.com/samsung-internet-dev/building-an-internet-connected-phone-with-peerjs-775bd6ffebec
         const peer = new Peer(''+Math.floor(Math.random()*2**18).toString(36).padStart(4,0), {
         host: location.hostname,
-        port:8080,
+        port:8000,
         debug: 1,
         path: '/myapp'
         });
