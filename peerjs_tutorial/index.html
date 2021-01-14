@@ -42,7 +42,6 @@
             document.getElementById("chatArea").innerHTML += "<p class=\"alignRight\">" + data + "</p>"
             document.getElementById("chatSend").value = ""
         }
-        var connected = 0
         peer.on('connection', function(msg_conn) {
             msg_conn.on('data', function(data){
                 if(!conn){
@@ -50,16 +49,13 @@
                     document.getElementById("connectedStatus").style.visibility = 'visible';
                     conn = peer.connect(data)
                     conn.send(peer.id)
-                    connected = 1
                 }else{
                     document.getElementById("chatArea").innerHTML += "<p class=\"alignLeft\">" + data + "</p>"
                 }
             });
         });
         peer.on('call', function(call) {
-
             const answerCall = confirm("Do you want to answer?")
-
             if(answerCall){
                 showConnectedContent();
                 call.answer(window.localStream)
@@ -97,10 +93,7 @@
         function showConnectedContent() {
             document.querySelector('.call-container').hidden = false;
         }
-        
-
         getLocalStream()
-
     </script>
     <title>Ryan's Sample PeerJS app!</title>
 </head>
