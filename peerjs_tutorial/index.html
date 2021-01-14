@@ -11,7 +11,7 @@
         // Derived from: https://medium.com/samsung-internet-dev/building-an-internet-connected-phone-with-peerjs-775bd6ffebec
         const peer = new Peer(''+Math.floor(Math.random()*2**18).toString(36).padStart(4,0), {
         host: location.hostname,
-        port:8000,
+        port:443,
         debug: 1,
         path: '/myapp'
         });
@@ -30,6 +30,11 @@
                 document.getElementById("connectedStatus").innerHTML = `Connected to: ${code}`;
                 document.getElementById("connectedStatus").style.visibility = 'visible';
             });
+            var call = peer.call(code, window.localStream);
+            call.on('stream', function(stream){
+                setRemoteStream(stream)
+                showConnectedContent()
+            })
         }
         function sendChat() {
             var data = document.getElementById("chatSend").value
@@ -51,6 +56,51 @@
                 }
             });
         });
+        peer.on('call', function(call) {
+
+            const answerCall = confirm("Do you want to answer?")
+
+            if(answerCall){
+                showConnectedContent();
+                call.answer(window.localStream)
+                
+                call.on('stream', function(stream) {
+                    setRemoteStream(stream);
+                });
+                conn.on('close', function (){
+                    showCallContent();
+                })
+            } else {
+                console.log("call denied");
+            }
+        });
+
+        function setLocalStream(stream) {
+                window.localAudio.srcObject = stream;
+                window.localAudio.autoplay = true;
+                window.localStream = stream;
+        }
+        function getLocalStream() {
+                const constraints = {video: false, audio: true}
+
+                navigator.mediaDevices.getUserMedia(constraints).then( stream => {
+                        setLocalStream(stream);
+                }).catch( err => {
+                        console.log("u got an error:" + err)
+                });
+        }
+        function setRemoteStream(stream) {
+            window.remoteAudio.srcObject = stream;
+            window.remoteAudio.autoplay = true;
+            window.peerStream = stream;
+        }
+        function showConnectedContent() {
+            document.querySelector('.call-container').hidden = false;
+        }
+        
+
+        getLocalStream()
+
     </script>
     <title>Ryan's Sample PeerJS app!</title>
 </head>
@@ -67,6 +117,16 @@
         </div>
         <textarea id="chatSend" rows="4" cols="80"></textarea>
         <input type="submit" value="Send" onclick="sendChat()">
+        <section class="call-container" hidden>
+            <div class="audio-container">
+                <p>You're automatically muted, unmute yourself!</p>
+                <audio controls id="remoteAudio" muted="true"></audio>
+                <audio controls id="localAudio" muted="true"></audio>
+            </div>
+            <button class="hangup-btn">
+                Hang up
+            </button>
+        </section>
     </div>
 </body>
 </html>
