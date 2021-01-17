@@ -20,6 +20,15 @@
             window.caststatus.textContent = `Your device ID is: ${peer.id}`;
         });
         var conn; 
+        function set_enter(){
+            var chat = document.getElementById("chatSend");
+            chat.addEventListener("keyup", function(event) {
+                if(event.keyCode === 13) {
+                    event.preventDefault();
+                    sendChat();
+                }
+            })
+        }
         function connectToPeer() {
             code = document.getElementById("myText").value; 
             conn = peer.connect(code);
@@ -35,7 +44,10 @@
                 setRemoteStream(stream)
                 showConnectedContent()
             })
+            var chat = document.getElementById("chatSend");
+            set_enter();
         }
+
         function sendChat() {
             var data = document.getElementById("chatSend").value
             conn.send(data)
@@ -47,8 +59,9 @@
                 if(!conn){
                     document.getElementById("connectedStatus").innerHTML = `Connected to: ${data}`
                     document.getElementById("connectedStatus").style.visibility = 'visible';
-                    conn = peer.connect(data)
-                    conn.send(peer.id)
+                    conn = peer.connect(data);
+                    conn.send(peer.id);
+                    set_enter();
                 }else{
                     document.getElementById("chatArea").innerHTML += "<p class=\"alignLeft\">" + data + "</p>"
                 }
@@ -63,7 +76,7 @@
                 call.on('stream', function(stream) {
                     setRemoteStream(stream);
                 });
-                conn.on('close', function (){
+                call.on('close', function (){
                     showCallContent();
                 })
             } else {
@@ -72,8 +85,8 @@
         });
 
         function setLocalStream(stream) {
-                window.localAudio.srcObject = stream;
-                window.localAudio.autoplay = true;
+                window.localVideo.srcObject = stream;
+                window.localVideo.autoplay = true;
                 window.localStream = stream;
         }
         function getLocalStream() {
@@ -86,40 +99,45 @@
                 });
         }
         function setRemoteStream(stream) {
-            window.remoteAudio.srcObject = stream;
-            window.remoteAudio.autoplay = true;
+            window.remoteVideo.srcObject = stream;
+            window.remoteVideo.autoplay = true;
             window.peerStream = stream;
         }
         function showConnectedContent() {
             document.querySelector('.call-container').hidden = false;
         }
         getLocalStream()
+
     </script>
     <title>Ryan's Sample PeerJS app!</title>
 </head>
 <body>
-    <div class="chatPage">
-        <div class="statuses">
-            <p id="caststatus" class="big">
-                The peerjs id is ???
-            </p> <p id="connectedStatus"></p>
-            <br />
+    <div class="pageContainer" style="display:flex;">
+        <div class="chatPage">
+            <div class="statuses">
+                <p id="caststatus" class="big">
+                    The peerjs id is ???
+                </p> <p id="connectedStatus"></p>
+                <br />
+            </div>
+            <input type="text" id="myText" placeholder="Enter remote id"><input class="conn-btn" type="submit" value="Connect" onclick="connectToPeer()">
+            <div id="chatArea">
+            </div>
+            <textarea id="chatSend" placeholder="Enter text for chat" rows="4" cols="50"></textarea><input id="sendMessage" type="submit" value="Send" onclick="sendChat()">
         </div>
-        <input type="text" id="myText"><input type="submit" value="Submit" onclick="connectToPeer()">
-        <div id="chatArea">
-        </div>
-        <textarea id="chatSend" rows="4" cols="80"></textarea>
-        <input type="submit" value="Send" onclick="sendChat()">
         <section class="call-container" hidden>
             <div class="audio-container">
                 <p>You're automatically muted, unmute yourself!</p>
-                <video controls id="remoteAudio" muted="true"></video>
-                <video controls id="localAudio" muted="true"></video>
+                <p> Remote </p>
+                <video controls id="remoteVideo" muted="true" width=300 height=200></video>
+                <p> You </p>
+                <video id="localVideo" muted="true" width=300 height=200></video>
             </div>
             <button class="hangup-btn">
                 Hang up
             </button>
         </section>
     </div>
+    
 </body>
 </html>

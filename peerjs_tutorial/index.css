@@ -12,9 +12,11 @@
 }
 .alignLeft{
     text-align: left;
+    margin:0px;
 }
 .alignRight{
     text-align: right;
+    margin:0px;
 }
 .chatPage{
     width:50rem;
@@ -23,5 +25,69 @@
     display: flex;
 }
 #chatArea{
-    width:35rem;
+    width:595px;
+    height:20rem;
+    padding:5px;
+    overflow-y:scroll;
+    overflow-wrap:break-word;
+    background-color: #1c2833;
+}
+#myText{
+    background-color:dimgray;
+    border:0px;
+    padding:5px;
+    color:antiquewhite;
+}
+#chatSend{
+    background-color:dimgray;
+    border:0px;
+    padding:2px;
+    color:antiquewhite;
+    height:78px;
+    width:543px;
+}
+.conn-btn {
+	background-color:#d0451b;
+	border-radius:3px;
+	border:1px solid #942911;
+    display:inline-block;
+    color:antiquewhite;
+	cursor:pointer;
+	font-size:14px;
+	padding:5px 22px;
+	text-decoration:none;
+    text-shadow:0px 1px 0px #854629;
+    margin:2px;
+}
+.conn-btn:hover {
+	background-color:#bc3315;
+}
+.conn-btn:active {
+	position:relative;
+	top:1px;
+}
+body{
+    background-color:  #283747;
+    color:antiquewhite;
+}
+#sendMessage {
+	background-color:#2dabf9;
+	border-radius:3px;
+	border:1px solid #0b0e07;
+	display:inline-block;
+	cursor:pointer;
+	color:antiquewhite;
+    font-family:Arial;
+    height:78px;
+    position:relative; 
+    top:-30px;
+	font-size:15px;
+	text-decoration:none;
+}
+#sendMessage:hover {
+	background-color:#0688fa;
+}
+#sendMessage:active {
+	position:relative;
+	top:1px;
 }
