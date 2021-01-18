@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="index.css">
     <!-- import the webpage's javascript file -->
     <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <script src="https://docs.opencv.org/3.4.0/opencv.js"></script>
     <script> 
         // Derived from: https://medium.com/samsung-internet-dev/building-an-internet-connected-phone-with-peerjs-775bd6ffebec
         const peer = new Peer(''+Math.floor(Math.random()*2**18).toString(36).padStart(4,0), {
@@ -33,6 +34,7 @@
             code = document.getElementById("myText").value; 
             conn = peer.connect(code);
             // on open will be launch when you successfully connect to PeerServer
+            run_vid();
             conn.on('open', function(){
             // here you have conn.id
                 conn.send(peer.id);
@@ -109,6 +111,85 @@
         getLocalStream()
 
     </script>
+    <script>
+    function run_vid(){
+        let video = document.getElementById('localVideo');
+        let cap = new cv.VideoCapture(video);
+
+        // take first frame of the video
+        let frame = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+        cap.read(frame);
+
+        // hardcode the initial location of window
+        let trackWindow = new cv.Rect(150, 60, 63, 125);
+
+        // set up the ROI for tracking
+        let roi = frame.roi(trackWindow);
+        let hsvRoi = new cv.Mat();
+        cv.cvtColor(roi, hsvRoi, cv.COLOR_RGBA2RGB);
+        cv.cvtColor(hsvRoi, hsvRoi, cv.COLOR_RGB2HSV);
+        let mask = new cv.Mat();
+        let lowScalar = new cv.Scalar(30, 30, 0);
+        let highScalar = new cv.Scalar(180, 180, 180);
+        let low = new cv.Mat(hsvRoi.rows, hsvRoi.cols, hsvRoi.type(), lowScalar);
+        let high = new cv.Mat(hsvRoi.rows, hsvRoi.cols, hsvRoi.type(), highScalar);
+        cv.inRange(hsvRoi, low, high, mask);
+        let roiHist = new cv.Mat();
+        let hsvRoiVec = new cv.MatVector();
+        hsvRoiVec.push_back(hsvRoi);
+        cv.calcHist(hsvRoiVec, [0], mask, roiHist, [180], [0, 180]);
+        cv.normalize(roiHist, roiHist, 0, 255, cv.NORM_MINMAX);
+
+        // delete useless mats.
+        roi.delete(); hsvRoi.delete(); mask.delete(); low.delete(); high.delete(); hsvRoiVec.delete();
+
+        // Setup the termination criteria, either 10 iteration or move by atleast 1 pt
+        let termCrit = new cv.TermCriteria(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 10, 1);
+
+        let hsv = new cv.Mat(video.height, video.width, cv.CV_8UC3);
+        let dst = new cv.Mat();
+        let hsvVec = new cv.MatVector();
+        hsvVec.push_back(hsv);
+        
+        const FPS = 30;
+        function processVideo() {
+            try {
+                var streaming = true;
+                if (!streaming) {
+                    // clean and stop.
+                    frame.delete(); dst.delete(); hsvVec.delete(); roiHist.delete(); hsv.delete();
+                    return;
+                }
+                let begin = Date.now();
+
+                // start processing.
+                cap.read(frame);
+                cv.cvtColor(frame, hsv, cv.COLOR_RGBA2RGB);
+                cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+                cv.calcBackProject(hsvVec, [0], roiHist, dst, [0, 180], 1);
+
+                // Apply meanshift to get the new location
+                // and it also returns number of iterations meanShift took to converge,
+                // which is useless in this demo.
+                [, trackWindow] = cv.meanShift(dst, trackWindow, termCrit);
+
+                // Draw it on image
+                let [x, y, w, h] = [trackWindow.x, trackWindow.y, trackWindow.width, trackWindow.height];
+                cv.rectangle(frame, new cv.Point(x, y), new cv.Point(x+w, y+h), [255, 0, 0, 255], 2);
+                cv.imshow('myCanvas', frame);
+
+                // schedule the next one.
+                let delay = 1000/FPS - (Date.now() - begin);
+                setTimeout(processVideo, delay);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
+        // schedule the first one.
+        setTimeout(processVideo, 0);
+    }
+    </script>
     <title>Ryan's Sample PeerJS app!</title>
 </head>
 <body>
@@ -132,6 +213,8 @@
                 <video controls id="remoteVideo" muted="true" width=300 height=200></video>
                 <p> You </p>
                 <video id="localVideo" muted="true" width=300 height=200></video>
+                <canvas id="myCanvas" width="200" height="100" style="background-color: goldenrod;"></canvas>
+
             </div>
             <button class="hangup-btn">
                 Hang up
