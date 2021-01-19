@@ -88031,61 +88031,63 @@ async function loop() {
     paintCurrentFrame(videoElementCanvas, videoElementCanvas.width, videoElementCanvas.height);
 
     // Get gaze prediction (ask clm to track; pass the data to the regressor; get back a prediction)
-    latestGazeData = getPrediction();
-    // Count time
     var elapsedTime = performance.now() - clockStart;
-
-
-    // Draw face overlay
-    if( src_webgazer.params.showFaceOverlay )
-    {
-      // Get tracker object
-      var tracker = src_webgazer.getTracker();
-      faceOverlay.getContext('2d').clearRect( 0, 0, videoElement.videoWidth, videoElement.videoHeight);
-      tracker.drawFaceOverlay(faceOverlay.getContext('2d'), tracker.getPositions());
-    }
-
-    // Feedback box
-    // Check that the eyes are inside of the validation box
-    if( src_webgazer.params.showFaceFeedbackBox )
-      checkEyesInValidationBox();
-
-    latestGazeData = await latestGazeData;
-
-    // [20200623 xk] callback to function passed into setGazeListener(fn)
-    callback(latestGazeData, elapsedTime);
-
-    if( latestGazeData ) {
-      // [20200608 XK] Smoothing across the most recent 4 predictions, do we need this with Kalman filter?
-      smoothingVals.push(latestGazeData);
-      var x = 0;
-      var y = 0;
-      var len = smoothingVals.length;
-      for (var d in smoothingVals.data) {
-        x += smoothingVals.get(d).x;
-        y += smoothingVals.get(d).y;
-      }
-
-      var pred = src_webgazer.util.bound({'x':x/len, 'y':y/len});
-
-      if (src_webgazer.params.storingPoints) {
-        drawCoordinates('blue',pred.x,pred.y); //draws the previous predictions
-        //store the position of the past fifty occuring tracker preditions
-        src_webgazer.storePoints(pred.x, pred.y, src_k);
-        src_k++;
-        if (src_k == 50) {
-          src_k = 0;
+    if (elapsedTime>30) {
+        // Count time
+        latestGazeData = getPrediction();
+        clockStart = performance.now();
+        // Draw face overlay
+        if( src_webgazer.params.showFaceOverlay )
+        {
+        // Get tracker object
+        var tracker = src_webgazer.getTracker();
+        faceOverlay.getContext('2d').clearRect( 0, 0, videoElement.videoWidth, videoElement.videoHeight);
+        tracker.drawFaceOverlay(faceOverlay.getContext('2d'), tracker.getPositions());
         }
-      }
-      // GazeDot
-      if (src_webgazer.params.showGazeDot) {
-        gazeDot.style.display = 'block';
-      }
-      gazeDot.style.transform = 'translate3d(' + pred.x + 'px,' + pred.y + 'px,0)';
-    } else {
-      gazeDot.style.display = 'none';
-    }
 
+        // Feedback box
+        // Check that the eyes are inside of the validation box
+        if( src_webgazer.params.showFaceFeedbackBox )
+        checkEyesInValidationBox();
+
+        latestGazeData = await latestGazeData;
+
+        // [20200623 xk] callback to function passed into setGazeListener(fn)
+        callback(latestGazeData, elapsedTime);
+
+        if( latestGazeData ) {
+        // [20200608 XK] Smoothing across the most recent 4 predictions, do we need this with Kalman filter?
+        smoothingVals.push(latestGazeData);
+        var x = 0;
+        var y = 0;
+        var len = smoothingVals.length;
+        for (var d in smoothingVals.data) {
+            x += smoothingVals.get(d).x;
+            y += smoothingVals.get(d).y;
+        }
+
+        var pred = src_webgazer.util.bound({'x':x/len, 'y':y/len});
+
+        if (src_webgazer.params.storingPoints) {
+            drawCoordinates('blue',pred.x,pred.y); //draws the previous predictions
+            //store the position of the past fifty occuring tracker preditions
+            src_webgazer.storePoints(pred.x, pred.y, src_k);
+            src_k++;
+            if (src_k == 50) {
+            src_k = 0;
+            }
+        }
+        // GazeDot
+        if (src_webgazer.params.showGazeDot) {
+            gazeDot.style.display = 'block';
+        }
+        gazeDot.style.transform = 'translate3d(' + pred.x + 'px,' + pred.y + 'px,0)';
+        } else {
+        gazeDot.style.display = 'none';
+        }
+
+        
+    }
     requestAnimationFrame(loop);
   }
 }
