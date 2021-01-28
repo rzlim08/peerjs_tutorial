@@ -19,7 +19,10 @@ const peerServer = ExpressPeerServer(server, {
     secure:true,
     ssl: {
         options
-    }
+    },
+    config: {'iceServers': [
+        { url: 'stun:stun.l.google.com:19302' },
+    ]} 
 });
 
 app.use(peerServer);
